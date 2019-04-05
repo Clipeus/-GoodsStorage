@@ -13,8 +13,23 @@ public:
     virtual ~goods_storage_t();
 
 public:
-    bool add(const goods_t& goods);
-    bool add(goods_t&& goods);
+    template<typename T, typename = typename std::enable_if_t<std::is_same<typename std::decay<T>::type, goods_t>::value>>
+    bool add(T&& goods)
+    {
+        std::lock_guard<std::mutex> lock(_locker);
+
+        std::string article = goods.article;
+        std::string producer = goods.producer;
+
+        auto it = _storage.insert(std::end(_storage), std::forward<T>(goods));
+        if (it == std::end(_storage))
+            return false;
+
+        _article_goods.insert(std::make_pair(std::move(article), it));
+        _producer_goods.insert(std::make_pair(std::move(producer), it));
+        return true;
+    }
+
     bool remove(const std::string& article);
     goods_t get_by_article(const std::string& article) const;
     std::vector<goods_t> get_by_producer(const std::string& producer) const;

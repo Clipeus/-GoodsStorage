@@ -9,34 +9,6 @@ goods_storage_t::~goods_storage_t()
 {
 }
 
-bool goods_storage_t::add(const goods_t& goods)
-{
-    std::lock_guard<std::mutex> lock(_locker);
-
-    auto it = _storage.insert(std::end(_storage), goods);
-    if (it == std::end(_storage))
-        return false;
-
-    _article_goods.insert(std::make_pair(goods.article, it));
-    _producer_goods.insert(std::make_pair(goods.producer, it));
-
-    return true;
-}
-
-bool goods_storage_t::add(goods_t&& goods)
-{
-    std::lock_guard<std::mutex> lock(_locker);
-
-    auto it = _storage.emplace(std::end(_storage), goods);
-    if (it == std::end(_storage))
-        return false;
-
-    _article_goods.emplace(std::make_pair(goods.article, it));
-    _producer_goods.emplace(std::make_pair(goods.producer, it));
-
-    return true;
-}
-
 bool goods_storage_t::remove(const std::string& article)
 {
     std::lock_guard<std::mutex> lock(_locker);
